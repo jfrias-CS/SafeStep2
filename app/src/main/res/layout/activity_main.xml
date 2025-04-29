@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white">
+
+    <!-- Top controls -->
+    <Switch
+        android:id="@+id/modeToggle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:layout_margin="16dp"
+        android:text="Diagnostic Mode"
+        android:textColor="@android:color/black"/>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/helpButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:src="@drawable/ic_help_outline"
+        android:contentDescription="Help"
+        app:backgroundTint="@android:color/white"
+        app:tint="@color/colorPrimary"
+        app:elevation="6dp" />
+
+    <!-- Main camera/image container - takes remaining space -->
+    <FrameLayout
+        android:id="@+id/camera_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/helpButton"
+        android:layout_above="@id/buttonGrid">
+
+        <!-- Camera preview -->
+        <SurfaceView
+            android:id="@+id/cameraPreview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <!-- ImageView - overlays camera preview when visible -->
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="fitCenter"
+            android:visibility="gone" />
+    </FrameLayout>
+
+    <!-- Analysis results (appears above camera when visible) -->
+    <ScrollView
+        android:id="@+id/analysisScrollView"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_below="@id/helpButton"
+        android:layout_marginTop="16dp"
+        android:visibility="gone"
+        android:background="#CCFFFFFF"
+        android:elevation="8dp"
+        android:padding="8dp">
+
+        <TextView
+            android:id="@+id/analysisResultTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/black"
+            android:textSize="14sp"
+            android:fontFamily="sans-serif" />
+    </ScrollView>
+
+    <!-- Severity indicator (appears above buttons) -->
+    <TextView
+        android:id="@+id/severityTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/buttonGrid"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="16dp"
+        android:alpha="0.7"
+        android:background="@android:color/black"
+        android:fontFamily="sans-serif-medium"
+        android:gravity="center"
+        android:padding="12dp"
+        android:text="Severity: Moderate"
+        android:textColor="@android:color/white"
+        android:textSize="18sp" />
+
+    <!-- Bottom button panel -->
+    <LinearLayout
+        android:id="@+id/buttonGrid"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="16dp"
+        android:orientation="vertical"
+        android:paddingHorizontal="16dp">
+
+        <!-- First row with 3 buttons -->
+        <LinearLayout
+            android:id="@+id/diagnosticPanel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp"
+            android:weightSum="3">
+
+            <Button
+                android:id="@+id/viewDamagesButton"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="4dp"
+                android:background="@color/colorPrimary"
+                android:enabled="false"
+                android:text="View Damages"
+                android:textColor="@android:color/white" />
+
+            <Button
+                android:id="@+id/analyzeButton"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_weight="1"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:background="@color/colorPrimary"
+                android:text="AI Analysis"
+                android:textColor="@android:color/white" />
+
+            <Button
+                android:id="@+id/speakButton"
+                android:layout_width="0dp"
+                android:layout_height="50dp"
+                android:layout_weight="1"
+                android:layout_marginStart="4dp"
+                android:background="@color/colorPrimary"
+                android:text="Speak"
+                android:textColor="@android:color/white" />
+        </LinearLayout>
+
+        <!-- Camera capture button -->
+        <LinearLayout
+            android:id="@+id/buttonRow2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal">
+
+            <com.google.android.material.floatingactionbutton.FloatingActionButton
+                android:id="@+id/captureImageButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:contentDescription="Capture photo"
+                app:backgroundTint="@color/colorPrimary"
+                app:tint="@android:color/white"
+                app:srcCompat="@drawable/ic_camera"
+                app:elevation="6dp"
+                app:fabSize="normal" />
+
+            <TextView
+                android:id="@+id/captureButtonLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Capture Image"
+                android:textColor="@android:color/white"
+                android:layout_marginTop="4dp"
+                android:background="#99000000" />
+        </LinearLayout>
+    </LinearLayout>
+</RelativeLayout>
