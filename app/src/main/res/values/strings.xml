@@ -1,3 +1,11 @@
 <resources>
-    <string name="app_name">SafeStep</string>
+    <string name="app_name">Safe-Step</string>
+    <string name="help_button">Help</string>
+    <string name="capture_image">Capture Image</string>
+    <string name="capture_photo">Capture photo</string>
+    <string name="speak">Speak</string>
+    <string name="ai_analysis">AI Analysis</string>
+    <string name="view_damages">View Damages</string>
+    <string name="severity_moderate">Severity: Moderate</string>
+    <string name="diagnostic_mode">Diagnostic Mode</string>
 </resources>

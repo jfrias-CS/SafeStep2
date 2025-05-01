@@ -25,6 +25,7 @@ import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.ImageView
+import android.widget.RelativeLayout
 import android.widget.ScrollView
 import android.widget.Switch
 import android.widget.TextView
@@ -37,7 +38,9 @@ import androidx.core.content.edit
 import androidx.lifecycle.lifecycleScope
 import com.example.safestep2.ml.Regressionmodel
 import com.example.safestep2.ml.Sidewalkmodel
+import com.google.android.material.button.MaterialButton
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.switchmaterial.SwitchMaterial
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -60,7 +63,7 @@ import kotlin.math.min
 class MainActivity : AppCompatActivity(), SurfaceHolder.Callback, Camera.PictureCallback {
 
     //region UI Components
-    private lateinit var aiAnalysisButton: Button
+    private lateinit var aiAnalysisButton: MaterialButton
     private lateinit var analysisResultTextView: TextView
     private lateinit var analysisScrollView: ScrollView
     private lateinit var cameraPreview: SurfaceView
@@ -68,8 +71,8 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback, Camera.Picture
     private lateinit var captureButtonLabel: TextView
     private lateinit var imageView: ImageView
     private lateinit var severityTextView: TextView
-    private lateinit var speakButton: Button
-    private lateinit var viewDamagesButton: Button
+    private lateinit var speakButton: MaterialButton
+    private lateinit var viewDamagesButton: MaterialButton
     //endregion
 
     //region Camera Components
@@ -94,16 +97,18 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback, Camera.Picture
     // TTS variables
     private lateinit var textToSpeech: TextToSpeech
     private var isTtsInitialized = false
+    private var allowAutomaticTTS = false
+    private var isCurrentlySpeaking = false
 
     // Diagnostic mode toggle
-    private lateinit var modeToggle: Switch
+    private lateinit var modeToggle: SwitchMaterial
     private var isDiagnosticMode = false
 
 
     //region Constants
     companion object {
         private const val CAMERA_PERMISSION_REQUEST = 200
-        private const val OPENAI_API_KEY = "OPENAI_API_KEY"
+        private const val OPENAI_API_KEY = "YOUR_API_KEY"
         private const val OPENAI_API_URL = "https://api.openai.com/v1/chat/completions"
         private const val FINE_TUNED_MODEL_ID = "ft:gpt-3.5-turbo-0125:ilab::BFwUwOmU"
     }
@@ -217,8 +222,12 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback, Camera.Picture
             val damage = damages[currentIndex]
             damageImageView.setImageBitmap(damage.bitmap)
             titleTextView.text = "Damage ${currentIndex + 1} of ${damages.size}"
-            severityTextView.text = damage.errorMessage?.let { "Error: $it" }
-                ?: "Severity: ${"%.2f".format(damage.severity)}"
+            val statusText = when {
+                !damage.errorMessage.isNullOrEmpty() -> "Error: ${damage.errorMessage}"
+                damage.severity != null -> "Severity: ${"%.2f".format(damage.severity)}"
+                else -> "Severity: Unknown"
+            }
+            severityTextView.text = statusText
             previousButton.isEnabled = currentIndex > 0
             nextButton.isEnabled = currentIndex < damages.size - 1
         }
@@ -391,6 +400,7 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback, Camera.Picture
                     // In standard mode, automatically run AI analysis and speak
                     if (damages.isNotEmpty()) {
                         lifecycleScope.launch {
+                            allowAutomaticTTS = true
                             analyzeDamageWithAI(damages, averageSeverity)
                         }
                     }
@@ -602,10 +612,10 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback, Camera.Picture
             Analyze this sidewalk damage data:
             ${
             JSONObject().apply {
-            put("damages", damagesJson)
-            put("average_severity", averageSeverity)
-            put("total_damages", damages.size)
-        }}
+                put("damages", damagesJson)
+                put("average_severity", averageSeverity)
+                put("total_damages", damages.size)
+            }}
             
             Provide:
             1. Severity assessment
@@ -691,6 +701,7 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback, Camera.Picture
                 if (isDiagnosticMode) {
                     aiAnalysisButton.isEnabled = false
                     viewDamagesButton.isEnabled = false
+                    speakButton.isEnabled = false
                 }
             }
             damages.any { it.severity != null } -> {
@@ -700,6 +711,7 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback, Camera.Picture
                 if (isDiagnosticMode) {
                     aiAnalysisButton.isEnabled = true
                     viewDamagesButton.isEnabled = true
+                    speakButton.isEnabled = true
                 } else {
                     // In standard mode, buttons are hidden but analysis is automatic
                 }
@@ -714,29 +726,31 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback, Camera.Picture
         }
     }
 
-    private fun displaySeverityPrompt(severity: Float) {
-        severityTextView.text = when {
-            severity <= 1 -> "Low Severity. Stay cautious."
-            severity <= 2 -> "Moderate Severity. Stay alert."
-            severity <= 3 -> "High Severity. Be very cautious."
-            severity <= 4 -> "Critical Severity. Immediate action required!"
-            else -> "Error calculating severity."
+    // Make sure the input is never null
+    fun displaySeverityPrompt(severity: Float?) {
+        val message = when {
+            severity == null -> "Severity unavailable"
+            severity <= 1 -> "Low Severity"
+            severity <= 2 -> "Moderate Severity"
+            severity <= 3 -> "High Severity"
+            severity <= 4 -> "Critical Severity"
+            else -> "Invalid severity value"
         }
+        severityTextView.text = message
     }
 
-    private fun showAnalysisResult(analysis: String) {
-        analysisResultTextView.text = analysis
+    fun showAnalysisResult(analysis: String?) {
+        val displayText = analysis?.takeIf { it.isNotBlank() }
+            ?: "No analysis results available"
+
+        analysisResultTextView.text = displayText
         analysisScrollView.visibility = View.VISIBLE
 
-        // Speak the analysis automatically in both modes
-        if (isTtsInitialized) {
-            textToSpeech.speak(analysis, TextToSpeech.QUEUE_FLUSH, null, null)
+        // Safe TTS
+        if (allowAutomaticTTS && isTtsInitialized && !displayText.isNullOrEmpty()) {
+            textToSpeech.speak(displayText, TextToSpeech.QUEUE_FLUSH, null, null)
         }
-
-        // Scroll to bottom to show latest analysis
-        analysisScrollView.post {
-            analysisScrollView.fullScroll(View.FOCUS_DOWN)
-        }
+        allowAutomaticTTS = false
     }
 
 
@@ -776,6 +790,17 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback, Camera.Picture
             if (!isChecked) {
                 analysisScrollView.visibility = View.GONE
             }
+            val params = severityTextView.layoutParams as RelativeLayout.LayoutParams
+            if (isChecked) {
+                // Diagnostic mode - position above the diagnostic panel
+                params.removeRule(RelativeLayout.ABOVE)
+                params.addRule(RelativeLayout.ABOVE, R.id.diagnosticPanel)
+            } else {
+                // Normal mode - position above the button grid
+                params.removeRule(RelativeLayout.ABOVE)
+                params.addRule(RelativeLayout.ABOVE, R.id.buttonGridContainer)
+            }
+            severityTextView.layoutParams = params
         }
 
         captureButton.setOnClickListener {
@@ -796,9 +821,15 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback, Camera.Picture
         }
         // Set up speak button
         speakButton.setOnClickListener {
+            allowAutomaticTTS = true
             lastAnalysisResult?.let { text ->
-                if (textToSpeech.isSpeaking) {
+                if (isCurrentlySpeaking) {
                     textToSpeech.stop()
+                    isCurrentlySpeaking = false
+                } else {
+                    if (textToSpeech.isSpeaking) {
+                        textToSpeech.stop()
+                    }
                 }
 
                 if (isTtsInitialized) {
