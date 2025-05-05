@@ -108,9 +108,9 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback, Camera.Picture
     //region Constants
     companion object {
         private const val CAMERA_PERMISSION_REQUEST = 200
-        private const val OPENAI_API_KEY = "YOUR_API_KEY"
+        private const val OPENAI_API_KEY = "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"
         private const val OPENAI_API_URL = "https://api.openai.com/v1/chat/completions"
-        private const val FINE_TUNED_MODEL_ID = "ft:gpt-3.5-turbo-0125:ilab::BFwUwOmU"
+        private const val FINE_TUNED_MODEL_ID = "ft:gpt-3.5-turbo-0125:ilab::BGHKK6va"
     }
     //endregion
 
@@ -618,9 +618,9 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback, Camera.Picture
             }}
             
             Provide:
-            1. Severity assessment
-            2. Potential hazards
-            3. Recommended actions
+            1. Severity assessment numerical value
+            2. Potential hazards when walking towards the damaged area
+            3. Recommended actions to walk through the path more safely. 
         """.trimIndent()
     }
 
