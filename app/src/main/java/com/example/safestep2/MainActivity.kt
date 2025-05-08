@@ -108,7 +108,6 @@ class MainActivity : AppCompatActivity(), SurfaceHolder.Callback, Camera.Picture
     //region Constants
     companion object {
         private const val CAMERA_PERMISSION_REQUEST = 200
-//        private const val OPENAI_API_KEY = "YOUR_API_KEY"
         val apiKey = BuildConfig.OPENAI_API_KEY
 
         private const val OPENAI_API_URL = "https://api.openai.com/v1/chat/completions"
