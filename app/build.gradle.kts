@@ -12,7 +12,6 @@ android {
     buildFeatures {
         compose = true
         mlModelBinding = true
-        buildConfig = true
     }
 
 
@@ -23,8 +22,6 @@ android {
         versionCode = 1
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        buildConfigField("String", "OPENAI_API_KEY", "\"${project.findProperty("OPENAI_API_KEY")}\"")
-
     }
 
     buildTypes {
